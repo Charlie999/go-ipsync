@@ -1,4 +1,4 @@
-package main
+package github.com/charlie999/go-ipsync
 
 import (
 	"github.com/vishvananda/netlink"

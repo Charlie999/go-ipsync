@@ -1,4 +1,4 @@
-module github.com/charlie999/ipsync
+module github.com/charlie999/go-ipsync
 
 go 1.19
 
