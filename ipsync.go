@@ -48,9 +48,9 @@ func shouldAddAddr(newaddr *netlink.Addr, intaddr4 []netlink.Addr, intaddr6 []ne
 	return true;
 }
 
-func printAddrAction(act AddrSyncAction) {
+/*func printAddrAction(act AddrSyncAction) {
 	fmt.Printf("%v %s\n", act.addr, actionName[act.action]);
-}
+}*/
 
 /*
 SyncAddrOnInterface(addrlist []*netlink.Addr, ifname String)
@@ -110,7 +110,7 @@ func SyncAddrOnInterface(addrlist []*netlink.Addr, ifname string) error {
 				return err;
 			}
 		}
-		printAddrAction(action);
+		// printAddrAction(action);
 	}
 
 	return nil;
