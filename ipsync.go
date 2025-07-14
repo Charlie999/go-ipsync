@@ -2,8 +2,6 @@ package main
 
 import (
 	"github.com/vishvananda/netlink"
-	"fmt"
-	"log"
 )
 
 type AddrSyncActionType int
@@ -12,10 +10,6 @@ const (
 	ActionRemove
 )
 
-var actionName = map[AddrSyncActionType]string{
-	ActionRemove:	"REMOVE",
-	ActionAdd:		"ADD",
-}
 
 type AddrSyncAction struct {
 	addr netlink.Addr
@@ -47,10 +41,6 @@ func shouldAddAddr(newaddr *netlink.Addr, intaddr4 []netlink.Addr, intaddr6 []ne
 
 	return true;
 }
-
-/*func printAddrAction(act AddrSyncAction) {
-	fmt.Printf("%v %s\n", act.addr, actionName[act.action]);
-}*/
 
 /*
 SyncAddrOnInterface(addrlist []*netlink.Addr, ifname String)
@@ -110,7 +100,6 @@ func SyncAddrOnInterface(addrlist []*netlink.Addr, ifname string) error {
 				return err;
 			}
 		}
-		// printAddrAction(action);
 	}
 
 	return nil;
