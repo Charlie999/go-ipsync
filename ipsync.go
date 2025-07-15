@@ -16,30 +16,14 @@ type AddrSyncAction struct {
 	action AddrSyncActionType
 }
 
-func shouldKeepAddr(newAddrList []*netlink.Addr, existing *netlink.Addr) *netlink.Addr {
-	for _, addr := range newAddrList {
-		if (existing.Equal(*addr)) {
-			return addr
+func sliceContainsAddr(needle netlink.Addr, haystack []netlink.Addr) bool {
+	for _, addr := range haystack {
+		if (addr.Equal(needle)) {
+			return true
 		}
 	}
 
-	return nil
-}
-
-func shouldAddAddr(newaddr *netlink.Addr, intaddr4 []netlink.Addr, intaddr6 []netlink.Addr) bool {
-	for _, addr4 := range intaddr4 {
-		if (addr4.Equal(*newaddr)) {
-			return false;
-		}
-	}
-
-	for _, addr6 := range intaddr6 {
-		if (addr6.Equal(*newaddr)) {
-			return false;
-		}
-	}
-
-	return true;
+	return false
 }
 
 /*
@@ -48,18 +32,14 @@ SyncAddrOnInterface(addrlist []*netlink.Addr, ifname String)
 Apply all addresses in addrlist to interface, and remove all that are not present.
 Must be done as root.
 */
-func SyncAddrOnInterface(addrlist []*netlink.Addr, ifname string) error {
+func SyncAddrOnInterface(addrlist []netlink.Addr, ifname string) error {
 	link, err := netlink.LinkByName(ifname)
 	if (err != nil) {
 		return err;
 	}
 
 	// Get addresses
-	addrList4, err := netlink.AddrList(link, netlink.FAMILY_V4)
-	if (err != nil) {
-		return err;
-	}
-	addrList6, err := netlink.AddrList(link, netlink.FAMILY_V6)
+	addrList, err := netlink.AddrList(link, netlink.FAMILY_ALL)
 	if (err != nil) {
 		return err;
 	}
@@ -67,26 +47,20 @@ func SyncAddrOnInterface(addrlist []*netlink.Addr, ifname string) error {
 	actions := []AddrSyncAction{}
 
 	// Check for removals
-	for _, addr := range addrList4 {
-		match := shouldKeepAddr(addrlist, &addr)
-		if (match == nil) {
-			actions = append(actions, AddrSyncAction{addr, ActionRemove}) 
-		}
-	}
-
-	for _, addr := range addrList6 {
-		match := shouldKeepAddr(addrlist, &addr)
-		if (match == nil) {
+	for _, addr := range addrList {
+		if (!sliceContainsAddr(addr, addrlist)) {
 			actions = append(actions, AddrSyncAction{addr, ActionRemove}) 
 		}
 	}
 
 	// Check for additions
 	for _, addr := range addrlist {
-		if (shouldAddAddr(addr, addrList4, addrList6)) {
-			actions = append(actions, AddrSyncAction{*addr, ActionAdd})
+		if (!sliceContainsAddr(addr, addrList)) {
+			actions = append(actions, AddrSyncAction{addr, ActionAdd})
 		}
 	}
+
+	// Opportunity for dry-run here?
 
 	for _, action := range actions {
 		if (action.action == ActionAdd) { // Add address
